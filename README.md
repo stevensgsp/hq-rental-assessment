@@ -1,93 +1,105 @@
-# api-requirements
+# Laravel 12 Assessment
 
-## Description
-We want you to implement a REST API endpoint that given a list of products, applies some
-discounts to them and can be filtered.
-You are free to choose whatever language and tools you are most comfortable with, but, we value you to use laravel since our main platform is also on laravel / php.
-We will value your ability to apply the following rules on the corresponding layers following Domain Driven Design. 
-Please add instructions on how to run it and publish it on your fork.
+This project is a small API built with Laravel 12.
 
-## Deliverable 
+REST API endpoint that given a list of products, applies some discounts to them and can be filtered by category and price. It implements the following rules to apply the discounts:
 
-Fork the project, work on the solution and send us back a link to your forked GitHub project to examine your answer to this test.
+1. [x] Products in the "insurance" category have a 30% discount.
+2. [x] The product with sku = 000003 has a 15% discount.
 
-## Conditions 
+Important: The prices are integers for example, 100.00€ would be 10000.
 
+## Requirements
 
-The prices are integers for example, 100.00€ would be 10000.
-  
-1. [x] You can store the products as you see fit (json file, in memory, rdbms of choice)
-2. [x] Products in the "insurance" category have a 30% discount.
-3. [x] The product with sku = 000003 has a 15% discount.
-4. [x] Provide a single endpoint. GET /products.
-5. [x] Can be filtered by category as a query string parameter.
-6. [x] (optional) Can be filtered by price as a query string parameter, this filter applies before discounts are applied.
-7. [x] Returns a list of Products with the given discounts applied when necessary Product model.
-8. [x] price.currency is always EUR.
-9. [x] When a product does not have a discount, price.final and price.original should be the same number and discount_percentage should be null.
-10. [x] When a product has a discount, price.original is the original price, price.final is the amount with the discount applied and discount_percentage represents the applied discount with the % sign.
+- PHP 8.2 or higher
+- Composer
 
-Example product with a discount of 30% applied:  
-`    {
-      "sku": "000001",
-      "name": "Full coverage insurance",
-      "category": "insurance",
-      "price": {
-          "original": 89000,
-          "final": 62300,
-          "discount_percentage": "30%",
-          "currency": "EUR"
-      }
-    }`
-  
-  Example product without a discount:
-  
-      `{
-        "sku": "000002",
-        "name": "Compact Car X3",
-        "category": "vehicle",
-        "price": {
-            "original": 89000,
-            "final": 89000,
-            "discount_percentage": null,
-            "currency": "EUR"
-        }
-      }`
-      
-## Dataset.       
-The following dataset is the only dataset you need to be able to serve on the API: 
+## Installation
 
-`{
-    "products": [
-      {
-        "sku": "000001",
-        "name": "Full coverage insurance",
-        "category": "insurance",
-        "price": 89000
-      },
-      {
-        "sku": "000002",
-        "name": "Compact Car X3",
-        "category": "vehicle",
-        "price": 99000
-      },
-      {
-        "sku": "000003",
-        "name": "SUV Vehicle, high end",
-        "category": "vehicle",
-        "price": 150000
-      },
-      {
-        "sku": "000004",
-        "name": "Basic coverage",
-        "category": "insurance",
-        "price": 20000
-      },
-      {
-        "sku": "000005",
-        "name": "Convertible X2, Electric",
-        "category": "vehicle",
-        "price": 250000
-      }
-    ]
-  }`
+1. Clone this repository:
+
+    ```bash
+    git clone git@github.com:stevensgsp/hq-rental-assessment.git
+    cd hq-rental-assessment
+    ```
+
+2. Install dependencies:
+
+    ```bash
+    composer install
+    ```
+
+3. Copy the .env.example file and rename it to .env:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+4. Generate the application key:
+
+    ```bash
+    php artisan key:generate
+    ```
+
+5. Run migrations and seed the database:
+
+    ```bash
+    php artisan migrate --seed
+    ```
+
+7. Start the development server:
+
+    ```bash
+    php artisan serve
+    ```
+
+The API will be available at http://localhost:8000.
+
+## Available Endpoint
+
+`GET /api/products`
+
+Returns a list of products. You can filter the results by:
+
+### Category:
+
+- By Category ID:
+
+    ```http
+    GET /api/products?filter[category_id]=2
+    ```
+
+- By Category Name:
+
+    ```http
+    GET /api/products?filter[category]=vehicle
+    ```
+
+### Price:
+
+- Less than 990.00 EUR:
+
+    ```http
+    GET /api/products?filter[price]=<99000
+    ```
+
+- Equal to 990.00 EUR:
+
+    ```http
+    GET /api/products?filter[price]=99000
+    ```
+
+- Greater than 990.00 EUR:
+
+    ```http
+    GET /api/products?filter[price]=>99000
+    ```
+
+Filtering is implemented using [spatie/laravel-query-builder](https://spatie.be/docs/laravel-query-builder/v6/features/filtering).
+
+## Design Patterns
+
+### Chain of Responsibility
+The discount rules applied to the products are implemented using the Chain of Responsibility behavioral design pattern. Each discount rule is encapsulated in its own handler class. These handlers are chained together and processed in sequence, applying the first applicable discount rule to the products.
+
+This approach promotes the Open/Closed Principle, making it easy to add and remove discount rules.
